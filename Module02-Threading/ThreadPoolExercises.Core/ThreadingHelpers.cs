@@ -14,6 +14,11 @@ namespace ThreadPoolExercises.Core
             
             for (int i = 0; i < repeats; i++)
             {
+                if (token.IsCancellationRequested && errorAction != null)
+                {
+                    errorAction(new OperationCanceledException(token));
+                    return;
+                }
                 Thread thread = new Thread(() => action());
                 thread.Start();
                 thread.Join();
