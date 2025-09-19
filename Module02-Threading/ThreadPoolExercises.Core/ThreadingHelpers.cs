@@ -19,7 +19,21 @@ namespace ThreadPoolExercises.Core
                     errorAction(new OperationCanceledException(token));
                     return;
                 }
-                Thread thread = new Thread(() => action());
+                Thread thread = new Thread(() =>
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception exception)
+                    {
+                        if (errorAction != null)
+                        {
+                            errorAction(exception);
+                        }
+                    }
+                });
+                
                 thread.Start();
                 thread.Join();
             }
