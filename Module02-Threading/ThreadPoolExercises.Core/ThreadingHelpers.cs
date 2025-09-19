@@ -11,8 +11,13 @@ namespace ThreadPoolExercises.Core
             //   HINT: you may use `Join` to wait until created Thread finishes
             // * In a loop, check whether `token` is not cancelled
             // * If an `action` throws and exception (or token has been cancelled) - `errorAction` should be invoked (if provided)
-
-
+            
+            for (int i = 0; i < repeats; i++)
+            {
+                Thread thread = new Thread(() => action());
+                thread.Start();
+                thread.Join();
+            }
 
         }
 
