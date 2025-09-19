@@ -12,32 +12,29 @@ namespace ThreadPoolExercises.Core
             // * In a loop, check whether `token` is not cancelled
             // * If an `action` throws and exception (or token has been cancelled) - `errorAction` should be invoked (if provided)
             
-            for (int i = 0; i < repeats; i++)
+            Thread thread = new Thread(() =>
             {
-                if (token.IsCancellationRequested && errorAction != null)
+                try
                 {
-                    errorAction(new OperationCanceledException(token));
-                    return;
-                }
-                Thread thread = new Thread(() =>
-                {
-                    try
+                    for (int j = 0; j < repeats; j++)
                     {
+                        if (token.IsCancellationRequested && errorAction != null)
+                        {
+                            errorAction(new OperationCanceledException(token));
+                            return;
+                        }
+                        
                         action();
                     }
-                    catch (Exception exception)
-                    {
-                        if (errorAction != null)
-                        {
-                            errorAction(exception);
-                        }
-                    }
-                });
-                
-                thread.Start();
-                thread.Join();
-            }
-
+                }
+                catch (Exception exception)
+                {
+                    errorAction?.Invoke(exception);
+                }
+            });
+            
+            thread.Start();
+            thread.Join();
         }
 
         public static void ExecuteOnThreadPool(Action action, int repeats, CancellationToken token = default, Action<Exception>? errorAction = null)
