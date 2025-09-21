@@ -44,8 +44,36 @@ namespace ThreadPoolExercises.Core
             // * In a loop, check whether `token` is not cancelled
             // * If an `action` throws and exception (or token has been cancelled) - `errorAction` should be invoked (if provided)
 
+            AutoResetEvent autoEvent = new AutoResetEvent(false);
+            Exception workerException = null;
+            
+            ThreadPool.QueueUserWorkItem(state =>
+            {
+                try
+                {
+                    for (int j = 0; j < repeats; j++)
+                    {
+                        if (token.IsCancellationRequested && errorAction != null)
+                        {
+                            errorAction(new OperationCanceledException(token));
+                            return;
+                        }
 
+                        action();
+                    }
+                }
+                catch (Exception exception)
+                {
+                    errorAction?.Invoke(exception);
+                    workerException = exception;
+                }
+                finally
+                {
+                    autoEvent.Set();
+                }
+            });
 
+            autoEvent.WaitOne();
         }
     }
 }
